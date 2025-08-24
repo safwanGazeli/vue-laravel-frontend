@@ -5,19 +5,26 @@
       <p>A full-stack application with authentication and user management</p>
       
       <div class="hero-actions">
-        <router-link v-if="!isAuthenticated" to="/login" class="btn btn-primary">
+        <router-link to="/jobs" class="btn btn-primary">
+          Browse Jobs
+        </router-link>
+        <router-link v-if="!isAuthenticated" to="/login" class="btn btn-secondary">
           Get Started
         </router-link>
-        <router-link v-if="!isAuthenticated" to="/register" class="btn btn-secondary">
+        <router-link v-if="!isAuthenticated" to="/register" class="btn btn-outline">
           Create Account
         </router-link>
-        <router-link v-if="isAuthenticated" to="/dashboard" class="btn btn-primary">
+        <router-link v-if="isAuthenticated" to="/dashboard" class="btn btn-outline">
           Go to Dashboard
         </router-link>
       </div>
     </div>
 
     <div class="features">
+      <div class="feature-card">
+        <h3>Job Listings</h3>
+        <p>Browse and search through available job opportunities</p>
+      </div>
       <div class="feature-card">
         <h3>Authentication</h3>
         <p>Secure login and registration system with JWT tokens</p>

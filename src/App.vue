@@ -8,6 +8,7 @@
           </router-link>
           <div class="nav-menu">
             <router-link to="/" class="nav-link">Home</router-link>
+            <router-link to="/jobs" class="nav-link">Jobs</router-link>
             <router-link v-if="!isAuthenticated" to="/login" class="nav-link">Login</router-link>
             <router-link v-if="!isAuthenticated" to="/register" class="nav-link">Register</router-link>
             <router-link v-if="isAuthenticated" to="/dashboard" class="nav-link">Dashboard</router-link>

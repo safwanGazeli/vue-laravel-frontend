@@ -44,6 +44,11 @@ const router = createRouter({
       name: 'users-edit',
       component: () => import('@/views/UserEditView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/jobs',
+      name: 'jobs',
+      component: () => import('@/views/JobsView.vue')
     }
   ]
 })
