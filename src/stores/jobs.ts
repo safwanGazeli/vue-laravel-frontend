@@ -40,6 +40,12 @@ export const useJobsStore = defineStore('jobs', {
     jobs: [] as Job[],
     loading: false,
     error: null as string | null,
+    filters: {
+      search: '',
+      category: '',
+      subcategory: '',
+      include: 'photos'
+    },
     pagination: {
       currentPage: 1,
       lastPage: 1,
@@ -52,7 +58,8 @@ export const useJobsStore = defineStore('jobs', {
     getJobs: (state) => state.jobs,
     isLoading: (state) => state.loading,
     getError: (state) => state.error,
-    getPagination: (state) => state.pagination
+    getPagination: (state) => state.pagination,
+    getFilters: (state) => state.filters
   },
 
   actions: {
@@ -61,8 +68,23 @@ export const useJobsStore = defineStore('jobs', {
       this.error = null
       
       try {
+        // Build query parameters
+        const params = new URLSearchParams()
+        params.append('page', page.toString())
+        params.append('include', this.filters.include)
+        
+        if (this.filters.search) {
+          params.append('filter[search]', this.filters.search)
+        }
+        if (this.filters.category) {
+          params.append('filter[category_id]', this.filters.category)
+        }
+        if (this.filters.subcategory) {
+          params.append('filter[subcategory_id]', this.filters.subcategory)
+        }
+        
         const response = await axios.get<JobsResponse>(
-          `https://api.baseplate.appetiserdev.tech/api/v1/jobs?page=${page}`
+          `https://api.baseplate.appetiserdev.tech/api/v1/jobs?${params.toString()}`
         )
         
         if (response.data.success) {
@@ -100,6 +122,19 @@ export const useJobsStore = defineStore('jobs', {
     async fetchPage(page: number) {
       if (page >= 1 && page <= this.pagination.lastPage) {
         await this.fetchJobs(page)
+      }
+    },
+
+    updateFilters(newFilters: Partial<typeof this.filters>) {
+      this.filters = { ...this.filters, ...newFilters }
+    },
+
+    clearFilters() {
+      this.filters = {
+        search: '',
+        category: '',
+        subcategory: '',
+        include: 'photos'
       }
     },
 

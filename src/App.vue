@@ -1,93 +1,120 @@
 <template>
   <div id="app">
-    <nav class="navbar">
-      <div class="container">
-        <div class="nav-content">
-          <router-link to="/" class="nav-brand">
-            Vue Laravel CRUD
-          </router-link>
-          <div class="nav-menu">
-            <router-link to="/" class="nav-link">Home</router-link>
-            <router-link to="/jobs" class="nav-link">Jobs</router-link>
-            <router-link v-if="!isAuthenticated" to="/login" class="nav-link">Login</router-link>
-            <router-link v-if="!isAuthenticated" to="/register" class="nav-link">Register</router-link>
-            <router-link v-if="isAuthenticated" to="/dashboard" class="nav-link">Dashboard</router-link>
-            <router-link v-if="isAuthenticated" to="/users" class="nav-link">Users</router-link>
-            <button v-if="isAuthenticated" @click="logout" class="btn btn-secondary">Logout</button>
-          </div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+      <div class="container-fluid px-3 px-lg-4">
+        <router-link to="/" class="navbar-brand fw-bold">
+          Vue Laravel CRUD
+        </router-link>
+        
+        <button 
+          class="navbar-toggler border-0" 
+          type="button" 
+          data-bs-toggle="collapse" 
+          data-bs-target="#navbarNav" 
+          aria-controls="navbarNav" 
+          aria-expanded="false" 
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <router-link to="/" class="nav-link">
+                <i class="bi bi-house me-2"></i>
+                Home
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/jobs" class="nav-link">
+                <i class="bi bi-briefcase me-2"></i>
+                Jobs
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/users" class="nav-link">
+                <i class="bi bi-people me-2"></i>
+                Users
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/dashboard" class="nav-link">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Dashboard
+              </router-link>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
 
     <main class="main-content">
-      <div class="container">
-        <router-view />
-      </div>
+      <router-view />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-
-const router = useRouter()
-const authStore = useAuthStore()
-
-const isAuthenticated = computed(() => authStore.isAuthenticated)
-
-const logout = async () => {
-  await authStore.logout()
-  router.push('/login')
-}
+// No additional logic needed
 </script>
 
 <style scoped>
-.navbar {
-  background-color: white;
-  border-bottom: 1px solid var(--color-border);
-  padding: 1rem 0;
-  margin-bottom: 2rem;
-}
-
-.nav-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.nav-brand {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.nav-menu {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+/* Clean navbar styles */
+.navbar-brand {
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .nav-link {
-  color: var(--color-text);
-  text-decoration: none;
-  padding: 0.5rem 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease;
   border-radius: 0.375rem;
-  transition: background-color 0.2s;
+  margin: 0 0.25rem;
 }
 
 .nav-link:hover {
-  background-color: #f1f5f9;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
 }
 
 .nav-link.router-link-active {
-  background-color: var(--color-primary);
-  color: white;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
 }
 
+/* Main content */
 .main-content {
-  min-height: calc(100vh - 100px);
+  min-height: calc(100vh - 56px);
+}
+
+/* Mobile menu */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 0.5rem;
+  }
+  
+  .nav-link {
+    margin: 0.25rem 0;
+    text-align: center;
+  }
+}
+
+/* Small screens */
+@media (max-width: 575.98px) {
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .nav-link {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem;
+  }
 }
 </style> 
