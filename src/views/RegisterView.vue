@@ -143,7 +143,7 @@ const handleRegister = async () => {
     })
     
     if (success) {
-      router.push('/dashboard')
+      router.push('/jobs')
     }
   } finally {
     loading.value = false

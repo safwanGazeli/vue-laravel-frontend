@@ -44,25 +44,56 @@
                   <input
                     v-model="searchQuery"
                     @input="handleSearch"
+                    @keyup.enter="performSearch"
                     type="text"
-                    placeholder="Search Jobs"
+                    placeholder="Search jobs by title, description..."
                     class="form-control"
                   />
-                  <button class="btn btn-outline-secondary" type="button">
-                    <i class="bi bi-search"></i>
+                  <button 
+                    @click="performSearch"
+                    class="btn btn-outline-secondary" 
+                    type="button"
+                    :disabled="jobsStore.isLoading"
+                  >
+                    <span v-if="jobsStore.isLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <i v-else class="bi bi-search"></i>
+                  </button>
+                  <button 
+                    v-if="searchQuery || categoryFilter || subcategoryFilter"
+                    @click="clearAllFilters"
+                    class="btn btn-outline-danger"
+                    type="button"
+                    title="Clear all filters"
+                  >
+                    <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
               </div>
               <div class="col-12 col-lg-6">
                 <div class="d-flex gap-2">
-                  <button class="btn btn-outline-secondary btn-sm flex-fill">
-                    <i class="bi bi-funnel me-1"></i>
-                    Filter
-                  </button>
-                  <button class="btn btn-outline-secondary btn-sm flex-fill">
-                    <i class="bi bi-mortarboard me-1"></i>
-                    Internship
-                  </button>
+                  <select 
+                    v-model="categoryFilter" 
+                    @change="handleFilterChange"
+                    class="form-select form-select-sm"
+                  >
+                    <option value="">All Categories</option>
+                    <option value="1">Construction</option>
+                    <option value="13">Technology</option>
+                    <option value="19">Security</option>
+                    <option value="31">Software</option>
+                  </select>
+                  <select 
+                    v-model="subcategoryFilter" 
+                    @change="handleFilterChange"
+                    class="form-select form-select-sm"
+                  >
+                    <option value="">All Subcategories</option>
+                    <option value="2">General</option>
+                    <option value="3">Specialized</option>
+                    <option value="15">IT Services</option>
+                    <option value="22">Security Services</option>
+                    <option value="36">Software Development</option>
+                  </select>
                   <button 
                     @click="$router.push('/jobs/create')"
                     class="btn btn-primary btn-sm"
@@ -71,6 +102,66 @@
                     Create Job
                   </button>
                 </div>
+              </div>
+            </div>
+            
+            <!-- Active Filters Display -->
+            <div v-if="searchQuery || categoryFilter || subcategoryFilter" class="alert alert-info py-2">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-funnel me-2"></i>
+                  <span class="me-2">Active filters:</span>
+                  <div class="d-flex gap-2">
+                    <span v-if="searchQuery" class="badge bg-primary">
+                      Search: "{{ searchQuery }}"
+                    </span>
+                    <span v-if="categoryFilter" class="badge bg-success">
+                      Category: {{ getCategoryName(categoryFilter) }}
+                    </span>
+                    <span v-if="subcategoryFilter" class="badge bg-warning text-dark">
+                      Subcategory: {{ getSubcategoryName(subcategoryFilter) }}
+                    </span>
+                  </div>
+                </div>
+                <button @click="clearAllFilters" class="btn btn-sm btn-outline-secondary">
+                  <i class="bi bi-x-lg me-1"></i>
+                  Clear All
+                </button>
+              </div>
+            </div>
+            
+            <!-- Quick Filter Presets -->
+            <div class="mb-3">
+              <div class="d-flex flex-wrap gap-2">
+                <span class="text-muted me-2">Quick filters:</span>
+                <button 
+                  @click="applyQuickFilter('web')"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  <i class="bi bi-code me-1"></i>
+                  Web Development
+                </button>
+                <button 
+                  @click="applyQuickFilter('software')"
+                  class="btn btn-outline-success btn-sm"
+                >
+                  <i class="bi bi-laptop me-1"></i>
+                  Software Jobs
+                </button>
+                <button 
+                  @click="applyQuickFilter('construction')"
+                  class="btn btn-outline-warning btn-sm"
+                >
+                  <i class="bi bi-tools me-1"></i>
+                  Construction
+                </button>
+                <button 
+                  @click="applyQuickFilter('security')"
+                  class="btn btn-outline-danger btn-sm"
+                >
+                  <i class="bi bi-shield me-1"></i>
+                  Security
+                </button>
               </div>
             </div>
             
@@ -120,6 +211,28 @@
 
                              <!-- Jobs List -->
                <div v-else class="p-3 p-md-4">
+                 <!-- Results Counter -->
+                 <div v-if="jobsStore.getJobs.length > 0" class="d-flex justify-content-between align-items-center mb-3">
+                   <div class="text-muted">
+                     <i class="bi bi-list-check me-1"></i>
+                     Showing {{ jobsStore.getPagination.from || 0 }}-{{ jobsStore.getPagination.to || 0 }} 
+                     of {{ jobsStore.getPagination.total }} jobs
+                     <span v-if="searchQuery || categoryFilter || subcategoryFilter">
+                       matching your filters
+                     </span>
+                   </div>
+                   <div class="btn-group btn-group-sm" role="group">
+                     <input type="radio" class="btn-check" name="viewMode" id="listView" autocomplete="off" checked>
+                     <label class="btn btn-outline-secondary" for="listView">
+                       <i class="bi bi-list"></i>
+                     </label>
+                     <input type="radio" class="btn-check" name="viewMode" id="gridView" autocomplete="off">
+                     <label class="btn btn-outline-secondary" for="gridView">
+                       <i class="bi bi-grid"></i>
+                     </label>
+                   </div>
+                 </div>
+                 
                  <!-- No Results -->
                  <div v-if="jobsStore.getJobs.length === 0 && !jobsStore.isLoading" class="text-center py-4 py-md-5">
                    <div class="mb-3 mb-md-4">
@@ -337,9 +450,17 @@ const handleSearch = () => {
   }
   
   searchTimeout = setTimeout(() => {
-    jobsStore.updateFilters({ search: searchQuery.value })
-    jobsStore.fetchJobs(1)
+    performSearch()
   }, 500)
+}
+
+const performSearch = () => {
+  jobsStore.updateFilters({ 
+    search: searchQuery.value,
+    category: categoryFilter.value,
+    subcategory: subcategoryFilter.value
+  })
+  jobsStore.fetchJobs(1)
 }
 
 const clearSearch = () => {
@@ -449,6 +570,50 @@ const handleDeleteJob = async (jobId) => {
   } catch (error) {
     console.error('Error deleting job:', error)
   }
+}
+
+const getCategoryName = (categoryId) => {
+  const categories = {
+    '1': 'Construction',
+    '13': 'Technology', 
+    '19': 'Security',
+    '31': 'Software'
+  }
+  return categories[categoryId] || `Category ${categoryId}`
+}
+
+const getSubcategoryName = (subcategoryId) => {
+  const subcategories = {
+    '2': 'General',
+    '3': 'Specialized',
+    '15': 'IT Services', 
+    '22': 'Security Services',
+    '36': 'Software Development'
+  }
+  return subcategories[subcategoryId] || `Subcategory ${subcategoryId}`
+}
+
+const applyQuickFilter = (filterType) => {
+  clearAllFilters()
+  
+  switch (filterType) {
+    case 'web':
+      searchQuery.value = 'web'
+      categoryFilter.value = '31' // Software
+      subcategoryFilter.value = '36' // Software Development
+      break
+    case 'software':
+      categoryFilter.value = '31' // Software
+      break
+    case 'construction':
+      categoryFilter.value = '1' // Construction
+      break
+    case 'security':
+      categoryFilter.value = '19' // Security
+      break
+  }
+  
+  performSearch()
 }
 
 onMounted(() => {

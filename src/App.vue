@@ -1,11 +1,14 @@
 <template>
   <div id="app" class="d-flex flex-column min-vh-100">
-    <router-view />
+    <NavigationBar />
+    <main class="flex-grow-1">
+      <router-view />
+    </main>
   </div>
 </template>
 
-<script setup lang="ts">
-// No additional logic needed
+<script setup>
+import NavigationBar from '@/components/NavigationBar.vue'
 </script>
 
 <style scoped>
@@ -17,10 +20,11 @@
   flex-direction: column;
 }
 
-/* Ensure router-view takes full available space */
-#app > * {
+/* Main content area */
+main {
   flex: 1;
   width: 100%;
+  padding: 1rem;
 }
 
 /* Responsive adjustments */

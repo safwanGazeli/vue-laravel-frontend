@@ -7,6 +7,12 @@
 
     <div class="dashboard-stats">
       <div class="stat-card">
+        <h3>Total Jobs</h3>
+        <p class="stat-number">{{ jobs.length }}</p>
+        <router-link to="/jobs" class="stat-link">Browse all jobs</router-link>
+      </div>
+      
+      <div class="stat-card">
         <h3>Total Users</h3>
         <p class="stat-number">{{ users.length }}</p>
         <router-link to="/users" class="stat-link">View all users</router-link>
@@ -23,10 +29,20 @@
       <div class="action-card">
         <h3>Quick Actions</h3>
         <div class="action-buttons">
-          <router-link to="/users" class="btn btn-primary">
+          <router-link to="/jobs" class="btn btn-primary">
+            <i class="bi bi-briefcase me-1"></i>
+            Browse Jobs
+          </router-link>
+          <router-link to="/jobs/create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i>
+            Create Job
+          </router-link>
+          <router-link to="/users" class="btn btn-info">
+            <i class="bi bi-people me-1"></i>
             Manage Users
           </router-link>
-          <router-link to="/users/create" class="btn btn-success">
+          <router-link to="/users/create" class="btn btn-secondary">
+            <i class="bi bi-person-plus me-1"></i>
             Add New User
           </router-link>
         </div>
@@ -63,28 +79,35 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
+import { useJobsStore } from '@/stores/jobs'
 
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
+const jobsStore = useJobsStore()
 
 const user = computed(() => authStore.user)
 const users = computed(() => usersStore.users)
+const jobs = computed(() => jobsStore.jobs)
 
 const recentUsers = computed(() => {
   return users.value.slice(0, 5)
 })
 
-const formatDate = (dateString: string | undefined) => {
+const formatDate = (dateString) => {
   if (!dateString) return ''
   return new Date(dateString).toLocaleDateString()
 }
 
 onMounted(() => {
-  usersStore.fetchUsers()
+  // Check if user is authenticated before fetching data
+  if (authStore.isAuthenticated) {
+    usersStore.fetchUsers()
+    jobsStore.fetchJobs()
+  }
 })
 </script>
 
