@@ -39,7 +39,7 @@
             
             <!-- Search Controls -->
             <div class="row g-3 mb-3">
-              <div class="col-12 col-lg-8">
+              <div class="col-12 col-lg-6">
                 <div class="input-group">
                   <input
                     v-model="searchQuery"
@@ -53,7 +53,7 @@
                   </button>
                 </div>
               </div>
-              <div class="col-12 col-lg-4">
+              <div class="col-12 col-lg-6">
                 <div class="d-flex gap-2">
                   <button class="btn btn-outline-secondary btn-sm flex-fill">
                     <i class="bi bi-funnel me-1"></i>
@@ -62,6 +62,13 @@
                   <button class="btn btn-outline-secondary btn-sm flex-fill">
                     <i class="bi bi-mortarboard me-1"></i>
                     Internship
+                  </button>
+                  <button 
+                    @click="$router.push('/jobs/create')"
+                    class="btn btn-primary btn-sm"
+                  >
+                    <i class="bi bi-plus me-1"></i>
+                    Create Job
                   </button>
                 </div>
               </div>
@@ -130,15 +137,32 @@
                      :key="job.id" 
                      class="card border-0 shadow-sm job-card"
                      @mouseenter="setHoveredJob(job)"
+                     @click="$router.push(`/jobs/${job.id}`)"
                    >
                      <div class="card-body p-3 p-md-4">
                        <div class="d-flex justify-content-between align-items-start mb-2 mb-md-3">
                          <div class="text-primary">
                            <i class="bi bi-fire"></i>
                          </div>
-                         <button class="btn btn-link text-muted p-0">
-                           <i class="bi bi-bookmark"></i>
-                         </button>
+                         <div class="d-flex gap-1">
+                           <button 
+                             @click.stop="$router.push(`/jobs/${job.id}/edit`)"
+                             class="btn btn-link text-primary p-0"
+                             title="Edit Job"
+                           >
+                             <i class="bi bi-pencil"></i>
+                           </button>
+                           <button 
+                             @click.stop="handleDeleteJob(job.id)"
+                             class="btn btn-link text-danger p-0"
+                             title="Delete Job"
+                           >
+                             <i class="bi bi-trash"></i>
+                           </button>
+                           <button class="btn btn-link text-muted p-0">
+                             <i class="bi bi-bookmark"></i>
+                           </button>
+                         </div>
                        </div>
                        
                        <div class="mb-2 mb-md-3">
@@ -287,11 +311,16 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { onMounted, computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useJobsStore } from '@/stores/jobs'
+import { useAuthStore } from '@/stores/auth'
 
+const route = useRoute()
+const router = useRouter()
 const jobsStore = useJobsStore()
+const authStore = useAuthStore()
 
 // Reactive variables for filters
 const searchQuery = ref('')
@@ -300,7 +329,7 @@ const subcategoryFilter = ref('')
 const hoveredJob = ref(null)
 
 // Debounced search function
-let searchTimeout: number | null = null
+let searchTimeout = null
 
 const handleSearch = () => {
   if (searchTimeout) {
@@ -339,7 +368,7 @@ const loadJobs = () => {
   jobsStore.fetchJobs()
 }
 
-const formatPrice = (price: string) => {
+const formatPrice = (price) => {
   const numPrice = parseFloat(price)
   return numPrice.toLocaleString('en-US', {
     minimumFractionDigits: 0,
@@ -347,7 +376,7 @@ const formatPrice = (price: string) => {
   })
 }
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -355,7 +384,7 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const truncateDescription = (description: string) => {
+const truncateDescription = (description) => {
   if (description.length <= 150) return description
   return description.substring(0, 150) + '...'
 }
@@ -376,11 +405,11 @@ const getPageNumbers = () => {
   return pages
 }
 
-const setHoveredJob = (job: any) => {
+const setHoveredJob = (job) => {
   hoveredJob.value = job
 }
 
-const getCompanyInitials = (title: string) => {
+const getCompanyInitials = (title) => {
   const words = title.split(' ')
   if (words.length >= 2) {
     return words[0].charAt(0) + words[1].charAt(0)
@@ -388,7 +417,7 @@ const getCompanyInitials = (title: string) => {
   return title.substring(0, 2).toUpperCase()
 }
 
-const getCompanyName = (title: string) => {
+const getCompanyName = (title) => {
   // Extract company name from job title (simplified)
   const words = title.split(' ')
   if (words.length > 2) {
@@ -397,7 +426,7 @@ const getCompanyName = (title: string) => {
   return title
 }
 
-const formatTimeAgo = (dateString: string) => {
+const formatTimeAgo = (dateString) => {
   const date = new Date(dateString)
   const now = new Date()
   const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
@@ -410,7 +439,25 @@ const formatTimeAgo = (dateString: string) => {
   return `${Math.floor(diffInDays / 365)} years ago`
 }
 
+const handleDeleteJob = async (jobId) => {
+  if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
+    return
+  }
+
+  try {
+    await jobsStore.deleteJob(jobId)
+  } catch (error) {
+    console.error('Error deleting job:', error)
+  }
+}
+
 onMounted(() => {
+  // Check if user is authenticated
+  if (!authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
+  
   loadJobs()
 })
 </script>

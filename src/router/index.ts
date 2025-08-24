@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,59 +11,54 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
-      meta: { requiresGuest: true }
+      component: () => import('@/views/LoginView.vue')
     },
     {
       path: '/register',
       name: 'register',
-      component: () => import('@/views/RegisterView.vue'),
-      meta: { requiresGuest: true }
+      component: () => import('@/views/RegisterView.vue')
     },
     {
       path: '/dashboard',
       name: 'dashboard',
-      component: () => import('@/views/DashboardView.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/DashboardView.vue')
     },
     {
       path: '/users',
       name: 'users',
-      component: () => import('@/views/UsersView.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/UsersView.vue')
     },
     {
       path: '/users/create',
       name: 'users-create',
-      component: () => import('@/views/UserCreateView.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/UserCreateView.vue')
     },
     {
       path: '/users/:id/edit',
       name: 'users-edit',
-      component: () => import('@/views/UserEditView.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/UserEditView.vue')
     },
     {
       path: '/jobs',
       name: 'jobs',
       component: () => import('@/views/JobsView.vue')
+    },
+    {
+      path: '/jobs/create',
+      name: 'jobs-create',
+      component: () => import('@/views/JobFormView.vue')
+    },
+    {
+      path: '/jobs/:id/edit',
+      name: 'jobs-edit',
+      component: () => import('@/views/JobFormView.vue')
+    },
+    {
+      path: '/jobs/:id',
+      name: 'jobs-detail',
+      component: () => import('@/views/JobDetailView.vue')
     }
   ]
-})
-
-// Navigation guards
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  const isAuthenticated = authStore.isAuthenticated
-
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login')
-  } else if (to.meta.requiresGuest && isAuthenticated) {
-    next('/dashboard')
-  } else {
-    next()
-  }
 })
 
 export default router 
